@@ -1,0 +1,14 @@
+{
+  "name": "node_course",
+  "version": "1.0.0",
+  "description": "day_1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "allawy",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^11.0.0"
+  }
+}
