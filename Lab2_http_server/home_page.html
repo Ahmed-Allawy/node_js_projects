@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+</head>
+<body>
+<h1>To Do</h1>
+<div id="todo"></div>
+<br>
+<span><h4>Select category<h4> </span>
+<select id="selectBox" onchange="displayContent()">
+  <option value="none">Select an option</option>
+  <option value="quotes">Quotes</option>
+  <option value="nature">Nature</option>
+</select>
+
+<script>
+    const field = document.getElementById('todo');
+    const data = [
+        { title: 'node js day_2 task', status: 'in progress' },
+        { title: 'reading iot book', status: 'to-do' },
+        { title: 'linked in message connection', status: 'done' },
+        { title: 'mathworks project', status: 'to-do' },
+        { title: 'english', status: 'to-do' },
+        { title: 'problem solving', status: 'to-do' },
+        { title: 'flutter project', status: 'to-do' }
+    ];
+
+    // Create a table element
+    const table = document.createElement('table');
+
+    // Create table header
+    const headerRow = table.insertRow();
+    const titleHeader = document.createElement('th');
+    titleHeader.textContent = 'Title';
+    headerRow.appendChild(titleHeader);
+    const statusHeader = document.createElement('th');
+    statusHeader.textContent = 'Status';
+    headerRow.appendChild(statusHeader);
+
+    // Create table rows and cells based on the data
+    data.forEach(item => {
+        const row = table.insertRow();
+        const titleCell = row.insertCell();
+        const statusCell = row.insertCell();
+        titleCell.textContent = item.title;
+        statusCell.textContent = item.status;
+    });
+
+    // Append the table to the div
+    field.appendChild(table);
+
+    function displayContent() {
+        const selectBox = document.getElementById('selectBox');
+        const selectedOption = selectBox.value;
+        if (selectedOption === 'quotes') {
+            window.location.href = 'http://127.0.0.1:3000/Quotes'; // Redirect to quotes page
+        }if (selectedOption === 'nature') {
+            window.location.href = 'http://127.0.0.1:3000/Nature'; // Redirect to nature page
+        }
+    }
+</script>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nature</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 40px;
+      color: #333;
+      text-align: center;
+    }
+
+    .image-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 800px;
+      margin-top: 20px;
+    }
+
+    .image-container img {
+      width: 1000px;
+      height: auto;
+      margin: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>Beautiful Nature Images</h1>
+  <div class="image-container">
+    <img src="data:image/jpg;base64,${imagebase64}" alt="Red dot" />
+  </div>
+</body>
+</html> -->

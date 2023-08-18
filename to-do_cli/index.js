@@ -101,7 +101,7 @@ const editEntry = ({ id, title, status }) => {
   const db = openDatabase()
   const index = findEntry({ id: id, db: db })
   if (index != -1) {
-    db[index].title = title
+    db[index].title = title? title: db[index].title
     db[index].status = status
     saveToDatabase(db)
     console.log('Entry edited successfully!');
