@@ -1,38 +1,29 @@
 const express = require('express');
 const fs = require('fs');
+const writeToFile = require('./writeToFile');
 const { type } = require('os');
 const app = express();
+
+// Custom middleware
+const requestLogger = (req, res, next) => {
+  const { method, url } = req;
+  const currentTime = new Date().toLocaleString();
+  console.log(`[${currentTime}] ${method} ${url}`);
+  next();
+};
+// Applying the middleware globally
+app.use(requestLogger);
 app.use(express.json());
 
 const port = 3002;
 
-/// database (open,save)///////
-const dbPath = '/home/allawy/Desktop/node_js_projects/Lab3_simple_Express_server/userDB.json'
-const openDatabase = () =>{
-  // fs.readFile(dbPath, 'utf8',(err, data) => {
-  //   if (err) {
-  //     console.error(err);
-  //     return;
-  //   }
-  //   console.log(data);
-  // }) || '[]'
- 
-}
-const saveToDatabase = (db) => {
-  fsFile.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf8')
-}
+const userDBPath = '/home/allawy/Desktop/node_js_projects/Lab3_simple_Express_server/userDB.json'
+const dbPath = '/home/allawy/Desktop/node_js_projects/to-do_cli/db.json'
 
-//// save user to db/////
-const saveUserData= (user)=>{
-  console.log(openDatabase());
-  // db.push(user);
-  // saveToDatabase(db);
-  console.log("user was registered successfully");
-};
 ////// routings/////
 app.post('/register', (req, res) => {
   const { username, password, firstname } = req.body;
-  console.log('palce 1'); 
+ 
   // Check if all required attributes are provided
   if (!username) {
     return res.status(422).json({ error: 'Username is required' });
@@ -43,28 +34,22 @@ app.post('/register', (req, res) => {
   if (!firstname) {
     return res.status(422).json({ error: 'First name is required' });
   }
-  loggedIn=false;
-  const user={
+  loggedIn = false;
+  const user = {
     username,
     password,
     firstname,
     loggedIn
   }
- 
-  fs.readFile(dbPath, 'utf8',(err, data) => {
+
+  fs.readFile(userDBPath, 'utf8', (err, data) => {
     if (err) {
       console.error(err);
       return;
     }
     data = JSON.parse(data);
     data.push(user);
-    fs.writeFile(dbPath,JSON.stringify(data, null, 2), err => {
-      if (err) {
-        console.error(err);
-      }
-      // done!
-      res.end('{message:”user was registered successfully”}');
-    });
+    writeToFile(userDBPath,data,'{message:”user was registered successfully”}',fs,res);
   });
 }); /////register route
 
@@ -72,39 +57,134 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  fs.readFile(dbPath, 'utf8',(err, data) => {
+  fs.readFile(userDBPath, 'utf8', (err, data) => {
     if (err) {
       console.error(err);
       return;
     }
     data = JSON.parse(data);
-     // Find user by username
-  const user = data.find(user => user.username === username);
+    // Find user by username
+    const user = data.find(user => user.username === username);
 
-  if (user && user.password === password) {
-    // Update user's loggedIn property
-    user.loggedIn = true;
-   
-    fs.writeFile(dbPath,JSON.stringify(data, null, 2), err => {
-      if (err) {
-        console.error(err);
-      }
-      // done!
-      res.end('{message:”user was registered successfully”}');
-    });
-    res.status(200).json({ message: 'Logged in successfully', profile: { name: username } });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
+    if (user && user.password === password) {
+      // Update user's loggedIn property
+      user.loggedIn = true;
+      writeToFile(userDBPath,data,'{message:”user was logged in successfully”}',fs,res);
+      res.status(200).json({ message: 'Logged in successfully', profile: { name: username } });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
   });
+
+});
+
+//// return to-do list
+app.get('/todos', (req, res) => {
+  fs.readFile(dbPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    res.end(data);
+  });
+
+});
+
+
+// add to-do route
+app.post('/todos', (req, res) => {
+  const { username, title } = req.body;
  
+  fs.readFile(userDBPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    data = JSON.parse(data);
+    // Find user by username
+    const user = data.find(user => user.username === username);
+
+    if (user && user.loggedIn === true) {
+    
+      fs.readFile(dbPath, 'utf8', (err, dbdata) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+     
+        dbdata = JSON.parse(dbdata);
+        const newEntry = {
+          id: dbdata[dbdata.length-1].id + 1,
+          title: title,
+          status: 'to-do',
+          owner: username
+        }
+        dbdata.push(newEntry);
+        writeToFile(dbPath,dbdata,'{message:”todo created successfully”}',fs,res);
+      });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  });
+
 });
 
 
-app.get('/',(req,res)=>{
-  res.end('hello allawy');
+// delete to-do route
+app.delete('/todos/:id', (req, res) => {
+  // Get the ID from the request parameters
+  const str = req.params.id;
+  const id = /\d+/g.exec(str)[0];
+
+  fs.readFile(dbPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    data = JSON.parse(data);
+    // Find todo by id
+    const todoIndex = data.findIndex((todo) => todo.id == id);
+
+    if (todoIndex === -1) {
+      return res.status(404).json({ error: 'Todo not found' });
+    }
+    // Delete the todo from the array
+    data.splice(todoIndex, 1);
+    writeToFile(dbPath,data,'{message:”todo deleted successfully”}',fs,res);
+  });
 });
 
-app.listen(port,()=>{
+
+// edit to-do route
+app.patch('/todos/:id', (req, res) => {
+  const { title, status } = req.body;
+  // Get the ID from the request parameters
+  const str = req.params.id;
+  const id = /\d+/g.exec(str)[0];
+
+  fs.readFile(dbPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    data = JSON.parse(data);
+    // Find todo by id
+    const todoIndex = data.findIndex((todo) => todo.id == id);
+
+    if (todoIndex === -1) {
+      return res.status(404).json({ error: 'Todo not found' });
+    }
+    // edit the todo
+    data[todoIndex].title = title;
+    data[todoIndex].status = status;
+    writeToFile(dbPath,data,'{message:”todo edited successfully”}',fs,res);
+  });
+});
+// Routes
+app.get('/', (req, res) => {
+ res.end("Hello Allawy");
+});
+app.listen(port, () => {
   console.log('server is running');
 });

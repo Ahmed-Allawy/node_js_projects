@@ -10,5 +10,11 @@
     "password": "5432",
     "firstname": "allawy",
     "loggedIn": true
+  },
+  {
+    "username": "ali",
+    "password": "5432",
+    "firstname": "ali",
+    "loggedIn": true
   }
 ]
