@@ -19,7 +19,7 @@ const saveToDatabase = (db) => {
 const addEntry = ({ title }) => {
   const db = openDatabase()
   const newEntry = {
-    id: db.length + 1,
+    id: db[db.length-1].id + 1,
     title: title,
     status: 'to-do'
   }
