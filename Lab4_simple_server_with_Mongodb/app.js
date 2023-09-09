@@ -5,6 +5,15 @@ require('./db');
 const port = 3000;
 const app = express();
 
+// Custom middleware
+const requestLogger = (req, res, next) => {
+  const { method, url } = req;
+  const currentTime = new Date().toLocaleString();
+  console.log(`[${currentTime}] ${method} ${url}`);
+  next();
+};
+// Applying the middleware globally
+app.use(requestLogger);
 app.use(express.json());
 app.get('/',(req,res)=>{
  res.send('hello allawy');
@@ -13,8 +22,14 @@ app.get('/',(req,res)=>{
 app.use(['/users','/user'],userRouter);
 app.use('/todos',todoRouter);
 app.use((err,req,res,next)=>{
-  res.status(500).json({ error: 'internal server error' });
+  err.statusCode = err.statusCode || 500;
+  const handledError = err.statusCode < 500;
+  res.status(err.statusCode).send({
+    message: handledError ? err.message : "something went wronge",
+    errors: err.errors || {}
+  });
 });
+
 app.listen(port,()=>{
   console.log('server is running');
 });

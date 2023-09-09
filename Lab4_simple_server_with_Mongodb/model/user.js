@@ -1,13 +1,33 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
-  username:{
-    type:String,
-    required:true,
-    unique:true
+  userName: {
+    type: String,
+    required: true,
+    unique: true
   },
+  password: {
+    type: String,
+    required: true
+  },
+  firstName: {
+    type: String,
+    required: true,
+    minLength: 3,
+    maxLength: 15
+  },
+  age: {
+    type: Number,
+    min: 13
+  },
+  todos: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Todo',
+    },
+  ],
 });
 
-const user = mongoose.model('users',schema);
+const User = mongoose.model('User', schema);
 
-module.exports = user;
+module.exports = User;
