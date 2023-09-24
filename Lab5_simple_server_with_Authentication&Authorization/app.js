@@ -21,6 +21,7 @@ app.get('/',(req,res)=>{
 
 app.use(['/users','/user'],userRouter);
 app.use('/todos',todoRouter);
+/// error handler
 app.use((err,req,res,next)=>{
   err.statusCode = err.statusCode || 500;
   const handledError = err.statusCode < 500;
