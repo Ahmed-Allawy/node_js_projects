@@ -1,18 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../model/user');
-const checkRequiredParams = require('../middleware/checkRequired')
-
+const checkRequiredParams = require('../middleware/checkRequired');
+const authorizationMiddleware = require('../middleware/authorizationMiddleware');
 //////////////////************************  1 : 28 *****/
-router.get('/', async (req, res, next) => {
+router.get('/', 
+authorizationMiddleware
+,async (req,res,next)=>{
   try {
-    const users = await User.find({}, 'firstName');
-    const firstNames = users.map(user => user.firstName);
-    res.json(firstNames);
+    const user = await User.findById(req.id);
+    if (!user) {
+      throw new Error('user not found')
+     }
+    res.send(user);
   } catch (error) {
     error.statusCode = 401;
-    next(error);
+    next(error)
   }
+  res.send(req.user);
 });
 
 router.post('/login',
@@ -24,31 +29,26 @@ router.post('/login',
       const user = await User.findOne({ userName });
       if (!user) {
         // If authentication failed, return an error response
-        const error = new Error('userName is wronge');
-        error.statusCode = 401;
-        throw error;
-      } 
-        const isMatch = await user.checkPassword(password);
-        if (!isMatch) {
-          const error = new Error('password is wronge');
-          error.statusCode = 401;
-          throw error;
-        }
-        // If login is successful, return a success response with user details
-        const token = await user.generateToken();
-        res.json({
-          message: 'Logged in successfully',
-          username: user.userName,
-          token,
-        });
-      
-    } catch (error) {
+      throw new Error('userName is wronge');
+      }
+      const isMatch = await user.checkPassword(password);
+      if (!isMatch) {
+       throw new Error('password is wronge');
+      }
+      // If login is successful, return a success response with user details
+      const token = await user.generateToken();
+      res.json({
+        message: 'Logged in successfully',
+        username: user.userName,
+        token,
+      });
 
+    } catch (error) {
+      error.statusCode = 401;
       next(error);
     }
 
   });
-
 
 router.post('/register',
   checkRequiredParams(['userName', 'password', 'firstName', 'age']),
@@ -67,17 +67,17 @@ router.post('/register',
     }
   });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/', 
+authorizationMiddleware,
+async (req, res, next) => {
   try {
-    const str = req.params.id;
-    const id = str.replace(/:/g, "");
-
+    const id = req.id;
     console.log(id);
     // Find the user by ID and delete it
     const user = await User.findByIdAndDelete(id);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+     throw new Error('user not found')
     }
 
     res.json({ message: 'User was deleted successfully' });
@@ -87,12 +87,13 @@ router.delete('/:id', async (req, res, next) => {
   }
 });
 
-router.patch('/:id', async (req, res, next) => {
+router.patch('/',
+authorizationMiddleware,
+ async (req, res, next) => {
   try {
-    const str = req.params.id;
-    const id = str.replace(/:/g, "");
+    const id = req.id;
     const { username, password, firstName, age } = req.body;
-
+console.log(id);
     // Find the user by ID and update the fields
     const user = await User.findByIdAndUpdate(
       id,
@@ -101,8 +102,8 @@ router.patch('/:id', async (req, res, next) => {
     );
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+      throw new Error('user not found')
+     }
 
     res.json({ message: 'User was edited successfully', user });
   } catch (error) {

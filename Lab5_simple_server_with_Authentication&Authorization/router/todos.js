@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Todo = require('../model/todos') 
-
+const authorizationMiddleware = require('../middleware/authorizationMiddleware');
 // router.get('/:userId',async(req,res,next)=>{
 //   try {
 //     const str = req.params.userId;
@@ -14,9 +14,12 @@ const Todo = require('../model/todos')
 //     next(error);
 //   }
 // });
-router.post('/',async (req,res, next)=>{
+router.post('/',
+authorizationMiddleware,
+async (req,res, next)=>{
   try {
-    const {userId, title, status, tags} = req.body;
+    const {title, status, tags} = req.body;
+    const userId = req.id;
     // Create a new todo
     const todo = new Todo({userId, title, status, tags});
     // Save the todo to the database
@@ -70,10 +73,12 @@ router.patch('/:id',async (req,res, next)=>{
 });
 
 
-router.get('/:userId',async(req,res,next)=>{
+router.get('/',
+authorizationMiddleware,
+async(req,res,next)=>{
   try {
-    const str = req.params.userId;
-    const id = str.replace(/:/g, "");
+   
+    const id = req.id;
 
     const { limit = 10, skip = 0 } = req.query;
     const limitNum = parseInt(limit, 10);

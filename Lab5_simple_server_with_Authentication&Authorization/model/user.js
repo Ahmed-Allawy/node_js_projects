@@ -41,6 +41,13 @@ schema.pre('save',async function() {
   }
 });
 
+schema.pre('findOneAndUpdate', async function(next) {
+  const currentDocument = this._update;
+  
+  currentDocument.password = bcrypt.hashSync(currentDocument.password, saltOrRounds)
+    next();
+});
+
 schema.methods.checkPassword = async function (password){
   const currentDocument = this;
   return bcrypt.compare(password,currentDocument.password);
@@ -49,11 +56,15 @@ schema.methods.checkPassword = async function (password){
 const secret = 'vkfjvkfjkjdfjfdvjfvjfjfljvfd';
 schema.methods.generateToken = async function() {
   const currentDocument = this;
-  return signJWT({id:currentDocument.id},secret,{expiresIn:'2h'});
+  return signJWT({id:currentDocument.id},secret,{expiresIn:'2d'});
 }
 
-verifyJWT( "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MGZhNzg0MWViNzc3OTVkZWE2NDk4OSIsImlhdCI6MTY5NTUyODkwNSwiZXhwIjoxNjk1NTI5MDI1fQ.7AAFuquJv-pGrIdGhn-YBtdFfK8xh40viOy9HLqE_vI",
-secret).then((payload)=>{console.log(payload);}).catch(err=>console.log(err));
+schema.statics.getIdFromToken = async function (token) {
+  const currentDocument = this;
+  const {id} = await verifyJWT(token, secret);
+  return id;
+  
+}
 
 const User = mongoose.model('User', schema);
 
