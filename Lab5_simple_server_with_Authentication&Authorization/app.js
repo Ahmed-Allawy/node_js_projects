@@ -2,7 +2,8 @@ const express = require('express');
 const userRouter = require('./router/users');
 const todoRouter = require('./router/todos');
 require('./db');
-const port = 3000;
+const {port} = require('./config');
+
 const app = express();
 
 // Custom middleware

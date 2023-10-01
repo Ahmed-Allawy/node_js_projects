@@ -3,22 +3,29 @@ const router = express.Router();
 const User = require('../model/user');
 const checkRequiredParams = require('../middleware/checkRequired');
 const authorizationMiddleware = require('../middleware/authorizationMiddleware');
-//////////////////************************  1 : 28 *****/
-router.get('/', 
-authorizationMiddleware
-,async (req,res,next)=>{
+/**
+ * 
+ * @param {*} asyncRouter 
+ */
+const asyncRounterWrapper = (asyncRouter) => async (req, res, next) => {
   try {
+    await asyncRouter(req,res);
+  } catch (error) {
+    next(error)
+  }
+}
+
+router.get('/',
+  authorizationMiddleware
+  ,
+  asyncRounterWrapper(async (req, res) => {
     const user = await User.findById(req.id);
     if (!user) {
       throw new Error('user not found')
-     }
+    }
     res.send(user);
-  } catch (error) {
-    error.statusCode = 401;
-    next(error)
-  }
-  res.send(req.user);
-});
+  }),
+);
 
 router.post('/login',
   checkRequiredParams(['userName', 'password'])
@@ -29,11 +36,11 @@ router.post('/login',
       const user = await User.findOne({ userName });
       if (!user) {
         // If authentication failed, return an error response
-      throw new Error('userName is wronge');
+        throw new Error('userName is wronge');
       }
       const isMatch = await user.checkPassword(password);
       if (!isMatch) {
-       throw new Error('password is wronge');
+        throw new Error('password is wronge');
       }
       // If login is successful, return a success response with user details
       const token = await user.generateToken();
@@ -67,49 +74,49 @@ router.post('/register',
     }
   });
 
-router.delete('/', 
-authorizationMiddleware,
-async (req, res, next) => {
-  try {
-    const id = req.id;
-    console.log(id);
-    // Find the user by ID and delete it
-    const user = await User.findByIdAndDelete(id);
+router.delete('/',
+  authorizationMiddleware,
+  async (req, res, next) => {
+    try {
+      const id = req.id;
+      console.log(id);
+      // Find the user by ID and delete it
+      const user = await User.findByIdAndDelete(id);
 
-    if (!user) {
-     throw new Error('user not found')
+      if (!user) {
+        throw new Error('user not found')
+      }
+
+      res.json({ message: 'User was deleted successfully' });
+    } catch (error) {
+      error.statusCode = 422;
+      next(error);
     }
-
-    res.json({ message: 'User was deleted successfully' });
-  } catch (error) {
-    error.statusCode = 422;
-    next(error);
-  }
-});
+  });
 
 router.patch('/',
-authorizationMiddleware,
- async (req, res, next) => {
-  try {
-    const id = req.id;
-    const { username, password, firstName, age } = req.body;
-console.log(id);
-    // Find the user by ID and update the fields
-    const user = await User.findByIdAndUpdate(
-      id,
-      { username, password, firstName, age },
-      { new: true }
-    );
+  authorizationMiddleware,
+  async (req, res, next) => {
+    try {
+      const id = req.id;
+      const { username, password, firstName, age } = req.body;
+      console.log(id);
+      // Find the user by ID and update the fields
+      const user = await User.findByIdAndUpdate(
+        id,
+        { username, password, firstName, age },
+        { new: true }
+      );
 
-    if (!user) {
-      throw new Error('user not found')
-     }
+      if (!user) {
+        throw new Error('user not found')
+      }
 
-    res.json({ message: 'User was edited successfully', user });
-  } catch (error) {
-    error.statusCode = 422;
-    next(error);
-  }
-});
+      res.json({ message: 'User was edited successfully', user });
+    } catch (error) {
+      error.statusCode = 422;
+      next(error);
+    }
+  });
 
 module.exports = router;

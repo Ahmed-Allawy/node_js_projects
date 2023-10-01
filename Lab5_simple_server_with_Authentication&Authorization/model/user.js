@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const util = require('util')
-
+const _ = require('lodash');
 const signJWT = util.promisify(jwt.sign);
 const verifyJWT = util.promisify(jwt.verify);
+const {saltOrRounds,secret} = require('../config');
 
 const schema = new mongoose.Schema({
   userName: {
@@ -26,14 +27,13 @@ const schema = new mongoose.Schema({
     type: Number,
     min: 13
   },
-  // todos: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: 'Todo',
-  //   },
-  // ],
-});
-const saltOrRounds = 10;
+},{
+  toJSON:{
+    transform:(doc,ret)=>_.omit(ret,['__v','password'])
+  }
+}
+);
+
 schema.pre('save',async function() {
   const currentDocument = this;
   if(currentDocument.isModified('password')){
@@ -53,7 +53,7 @@ schema.methods.checkPassword = async function (password){
   return bcrypt.compare(password,currentDocument.password);
 }
 
-const secret = 'vkfjvkfjkjdfjfdvjfvjfjfljvfd';
+
 schema.methods.generateToken = async function() {
   const currentDocument = this;
   return signJWT({id:currentDocument.id},secret,{expiresIn:'2d'});
