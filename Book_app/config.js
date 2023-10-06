@@ -10,5 +10,5 @@ module.exports = {
   saltOrRounds:process.env.SALT_ROUNDS||7,
   secret:process.env.SECRET_KEY,
   uri:process.env.PG_URI,
-  port:process.env.PORT
+  port:process.env.PORT || 3000
 }
