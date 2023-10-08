@@ -1,5 +1,5 @@
 Lab4_simple_server_with_Mongodb/data
 Lab5_simple_server_with_Authentication&Authorization/node_modules
 Lab5_simple_server_with_Authentication&Authorization/.env
-Book_app/.env
-Book_app/node_modules
+Book_api/.env
+Book_api/node_modules
