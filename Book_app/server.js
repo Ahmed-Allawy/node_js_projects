@@ -1,6 +1,7 @@
 const express = require('express');
 const {port} = require('./config');
 const storeRouter = require('./route/store.route');
+const bookRouter = require('./route/book.route');
 const app = express();
 
 // Custom middleware
@@ -17,7 +18,7 @@ app.get('/',(req,res)=>{
  res.send('hello allawy');
 });
 
-// app.use(['/users','/user'],userRouter);
+app.use(['/books','/book'],bookRouter);
 app.use('/store',storeRouter);
 /// error handler
 app.use((err,req,res,next)=>{

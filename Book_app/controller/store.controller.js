@@ -21,7 +21,7 @@ exports.saveNewStore = async (req, res) => {
     var createdOn = new Date();
     const { storeName, address } = req.body;
     if (!storeName || !address) {
-      return res.status(500).send({ error: 'store name and address are required , can not empty' })
+      return res.status(500).send({ error: 'store name and address are required , can not be empty' })
     }
     let storeCode = generateStoreCode();
 
