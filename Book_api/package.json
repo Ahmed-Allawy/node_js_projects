@@ -1,7 +1,6 @@
 {
   "name": "book_api",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -18,5 +17,6 @@
     "start": "nodemon server.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "description": ""
 }
